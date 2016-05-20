@@ -1,0 +1,241 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Django Channels — Ou comment passer dans la 4ème dimension</title>
+  <link rel="stylesheet" href="./dist/talkie.min.css">
+  <link rel="stylesheet" href="./dist/talkie-default.min.css">
+  <link rel="stylesheet" href="./dist/monokai_sublime.min.css">
+  <link rel="stylesheet" href="./dist/mozilla.css">
+</head>
+<body>
+
+<template layout="cover" invert type="text/x-markdown"
+          backface="./images/servicedenuages.png"
+          backface-filter="brightness(.9)">
+
+# Channels&nbsp;&nbsp;
+
+</template>
+
+<template layout="cover" invert type="text/x-markdown"
+          backface="./images/horizon.jpg"
+          backface-filter="brightness(.9)">
+
+## Comment fonctionne Django aujourd'hui ?
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+![overview](./images/http-1.x.png)
+
+</template>
+
+
+<template layout="bullets" type="text/x-markdown">
+## HTTP 1.x
+
+1. Une requête est reçue par le serveur
+2. Un worker WSGI est assigné au traitement d'une vue.
+3. Une réponse est retournée par la vue.
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+# Petit sondage
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+## Qui développe des appli mobile ou des app avec front-end ?
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+## Qui développe des services web (API HTTP) ?
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+## Qui utilise les websockets ou push notifications ?
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+# Websockets
+Collaboration et temps réel
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+# Websockets
+
+- Mettre à jour la page sans la rafraîchir
+- Collaboration entre des utilisateurs d'une même app
+- Chat / Live blogging
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+![overview](./images/websockets.png)
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+
+# Pourquoi est-ce un problème pour Django ?
+
+</template>
+
+<template layout="bullets-invert" type="text/x-markdown"
+          backface="./images/offline.jpg"
+          backface-filter="brightness(.9)">
+
+## Pourquoi est-ce un problème ?
+
+1. Ne s'intégre pas avec WSGI et le modèle Request / Response
+2. En WSGI il faudrait un worker par client avec une boucle qui attende indéfiniement et qui regarde
+   s'il y a quelque chose à lire ou quelque chose à écrire ce qui serait fragile.
+3. Un worker prend de l'espace en mémoire, et il faudrait beaucoup de mémoire même
+   pour peu de client.
+4. Un bug dans le worker (erreur 500) ferait planter la connexion Websocket.
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+# Comment faire sans modifier Django ?
+
+- Déployer un serveur spécifique pour gérer la connexion WebSocket
+- Ajouter un endpoint qui utilise ce serveur pour la communication WebSocket
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+# Problèmes ?
+
+- Intégration avec Django compliqué notamment pour les accès ORM.
+- Nécessite d'avoir du code à deux endroits.
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+# Arrivée de HTTP 2.0
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+# HTTP 2.0
+
+- Une unique connexion par utilisateur du site
+- Un état côté serveur pour la durée de la connexion remplace les sessions
+- On peut demander plusieurs fichiers sans attendre de réponse, prioriser l'ordre d'arrivée.
+- Protocole binaire entièrement supporté par Wireshark et par les Dev tools Chrome et Firefox
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+![overview](./images/http-2.x.png)
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+# Pertinence de Django et de Python pour le web aujourd'hui ?
+
+- WSGI n'est pas approprié pour le support des WebSockets et de HTTP2
+- Support des API HTTP possible via une lib externe django-rest-framework
+- Support des websockets possible mais complexe
+- Aucune intégration simple avec ReactJS ou Angular
+
+</template>
+
+<template layout="title" type="text/x-markdown">
+# La promesse de Django Channels
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+## Un framework basé sur des événements
+
+- Un nouveau protocole decrivant des évènements : ASGI
+- Un serveur ASGI qui gère les connexions (i.e: Daphne)
+- Des workers qui gère les évènements <small>manage.py runworker</small>
+- Une requête devient un évènement.
+- Le serveur ASGI ajoute les évènements dans une file
+- On peut aussi lancer des tâches asynchrones
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+# Est-ce que je dois écrire du code asynchrone
+
+Le code qui traite un évènement est synchrone, toute la partie
+asynchrone est gérée par Django avec Daphnee par exemple.
+
+On écrit un code similaire à ce que l'on écrit pour les views.
+</template>
+
+
+<template layout="bullets" type="text/x-markdown">
+
+# Quelques petits plus
+
+- <small>manage.py runserver</small> va lancer automatiquement le server et les workers
+- On peut lancer <small>manage.py runserver --no-worker</small>
+- On peut lancer autant d'interface serveur et de worker qu'on souhaite
+- On peut écrire plusieurs worker (Websocket, Tasks, HTTP)
+  ``python manage.py runworker --only-channels=http.* --only-channels=websocket.*``
+- Il n'y a pas de channel défini par défaut dans Django
+- On peut utiliser Redis comme Channel Layer
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+
+# Quelques petits plus
+
+- On peut utiliser le décorateur ``channels.sessions.channel_session``
+- On a ainsi accès à ``message.channel_session``
+- Les channels peuvent utiliser la session http avec ``message.http_session``
+- On peut faire du routing des events handler comme avec ``urls.py``
+- Il est possible d'utiliser ``enforce_ordering`` pour être sur que les worker traitent les messages dans l'ordre où ils arrivent.
+
+</template>
+
+
+<template layout="bullets" type="text/x-markdown">
+
+# Un gros plus
+
+- On peut maintenant mettre à jour le code sans perdre de clients en
+  redémarrant juste les workers sauf si on modifie le settings
+  ``CHANNEL_LAYER``.
+
+</template>
+<script src="./dist/highlight.min.js"></script>
+<script src="./dist/talkie.js"></script>
+<script>
+var talkie = Talkie({wide: false});
+
+talkie.next.plug(talkie.control.keydown('s'));
+talkie.next.plug(talkie.control.keydown('n'));
+talkie.prev.plug(talkie.control.keydown('a'));
+talkie.prev.plug(talkie.control.keydown('p'));
+
+document.addEventListener('DOMContentLoaded', function() {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('[layout]'));
+  talkie.changed.onValue(function(current) {
+    console.clear();
+    // print presenter notes
+    console.info(talkie.notes[current.getAttribute('page')]);
+  });
+});
+</script>
+</body>
+</html>
