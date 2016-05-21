@@ -99,11 +99,9 @@ Collaboration et temps réel
 
 ## Pourquoi est-ce un problème ?
 
-1. Ne s'intégre pas avec WSGI et le modèle Request / Response
-2. En WSGI il faudrait un worker par client avec une boucle qui attende indéfiniement et qui regarde
-   s'il y a quelque chose à lire ou quelque chose à écrire ce qui serait fragile.
-3. Un worker prend de l'espace en mémoire, et il faudrait beaucoup de mémoire même
-   pour peu de client.
+1. Ne s'intégre pas avec WSGI (Request / Response)
+2. Système qui bloquerait le worker
+3. Code compliqué et fragile
 4. Un bug dans le worker (erreur 500) ferait planter la connexion Websocket.
 
 </template>
@@ -133,8 +131,18 @@ Collaboration et temps réel
 
 - Une unique connexion par utilisateur du site
 - Un état côté serveur pour la durée de la connexion remplace les sessions
-- On peut demander plusieurs fichiers sans attendre de réponse, prioriser l'ordre d'arrivée.
 - Protocole binaire entièrement supporté par Wireshark et par les Dev tools Chrome et Firefox
+
+</template>
+
+<template layout="bullets" type="text/x-markdown">
+# HTTP 2.0
+
+- Demander plusieurs fichiers sans attendre de réponse
+- Prioriser l'ordre d'arrivée des informations
+- Recevoir des chunks de fichiers en parallèle
+- Pousser des données dans le cache de l'utilisateur depuis le serveur.
+- Utiliser HTTP2 avec Django aujourd'hui en l'activant dans Nginx et ça vaut le coup.
 
 </template>
 
