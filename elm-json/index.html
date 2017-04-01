@@ -1,0 +1,314 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section data-markdown>
+	                <script type="text/template">
+# Elm JSON
+
+by @Natim
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Elm — Gérer du JSON
+
+1. Pour utiliser les données du `JSON`, il faut mettre à jour le `Model`
+2. Le `Model` est fortement typé
+3. La mise à jour du `Model` se fait via les événements
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+# Petit sondage
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Qui fait des applications front-end ?
+
+i.e: React.js / Angular.js / Ember.js / Vue.js
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir le type de record
+
+```elm
+type alias Show =
+    { title : String
+    , description : Maybe String
+    , rating : Maybe Int
+    , genres : List Genre
+    }
+
+type alias Genre =
+    String
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir le type de record
+
+1. On créé un type de record
+2. Tous les champs facultatifs sont des `Maybe`
+3. On peut utiliser des sous records pour les objets imbriqués
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Exemple de record
+
+```json
+{
+  "title": "Stranger Things",
+  "description": "A kid disapears...",
+  "rating": 4,
+  "genres": ["SciFi", "Thriller"]
+}
+```
+```json
+{
+  "title": "Stranger Things",
+  "genres": []
+}
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Préparer le `Model`
+
+```elm
+type alias Model = { shows : List Show }
+
+
+type alias Data = { data : List Show }
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Decoder le record
+
+```elm
+import Json.Decode exposing (
+  Decoder, string, list, int, map4, field, maybe)
+
+
+decodeShow : Decoder Show
+decodeShow =
+    map4 Show
+        (field "title" string)
+        (maybe <| field "description" string)
+        (maybe <| field "rating" int)
+        (field "genres" <| list string)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Decoder le record `Show`
+
+- Bien compter le bon nombre de champs `Json.Decode.map4`
+- Bien mettre les champs dans l'ordre du Model
+- On peut utiliser `<|` comme des pipes pour passer le resultat d'une
+  fonction en paramètres d'une autre.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Decoder la liste de `Show`
+
+```elm
+import Json.Decode as Decode
+
+decodeShows : Decode.Decoder Data
+decodeShows =
+    Decode.map1 Data
+        (Decode.field "data" <| Decode.list decodeShow)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+```sh
+$ elm-package install NoRedInk/elm-decode-pipeline
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Décoder avec `Json.Decode.Pipeline`
+
+```elm
+import Json.Decode exposing (
+    string, int, Decoder, list)
+import Json.Decode.Pipeline exposing (
+    decode, required, optional)
+
+showDecoder : Decoder Show
+showDecoder =
+    decode Show
+        |> require "title" string
+        |> optional "description" string                         
+        |> optional "rating" int
+        |> require "genres" (list string)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Décoder avec `Json.Decode.Pipeline`
+
+```elm
+import Json.Decode exposing (Decoder, list)
+import Json.Decode.Pipeline exposing (
+    decode, required)
+
+decodeShows : Decoder Data
+decodeShows =
+    decode Data
+        |> required "data" (list showDecoder)
+
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Avec `Json.Decode.Pipeline`
+
+- Pas besoin de compter les champs
+- On peut facilement avoir `required`, `optional`, `hardcoded`
+- Notation plus élegante                        
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# Faire un appel HTTP
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Installer le client HTTP
+```sh
+$ elm-package install elm-lang/http
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Écrire la commande
+
+```elm
+import Http
+
+type Msg = UpdateShows (Result Http.Error Data)
+
+uri =
+  "https://k.io/v1/buckets/default/collections/shows/records"
+
+getData : Cmd Msg
+getData =
+    Http.send UpdateShows <|
+        Http.get uri decodeShows
+
+init : ( Model, Cmd Msg )
+    ({ shows = [] }, getData)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Gérer la réponse du server
+
+```elm
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        UpdateModel results ->
+            case results of
+                Ok r ->
+                    ({ model | shows = r.data }, Cmd.none)
+
+                Err err ->
+                    ( { model | error = err }, Cmd.none )
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Encoder du JSON
+
+```elm
+import Json.Encode as Encode
+
+encodeAnswer : String -> Encode.Value
+encodeAnswer answer =
+    Encode.object [ ( "answer", Encode.string answer ) ]
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Utiliser la valeur encodée
+
+```elm
+type alias Headers = List (String, String)
+
+answerResource : String ->  Headers -> Encode.Value -> HttpBuilder.RequestBuilder
+answerResource uri headers body =
+    HttpBuilder.post uri
+        |> HttpBuilder.withHeaders headers
+        |> HttpBuilder.withJsonBody body
+        |> Http.send AnswerResponse
+```
+	                </script>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
