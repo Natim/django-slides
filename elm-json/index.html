@@ -157,6 +157,8 @@ decodeShows =
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
+## Installer la lib `Json.Decode.Pipeline`
+
 ```sh
 $ elm-package install NoRedInk/elm-decode-pipeline
 ```
@@ -167,8 +169,7 @@ $ elm-package install NoRedInk/elm-decode-pipeline
 ## Décoder avec `Json.Decode.Pipeline`
 
 ```elm
-import Json.Decode exposing (
-    string, int, Decoder, list)
+import Json.Decode exposing (string, int, Decoder, list)
 import Json.Decode.Pipeline exposing (
     decode, required, optional)
 
