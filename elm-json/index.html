@@ -176,10 +176,10 @@ import Json.Decode.Pipeline exposing (
 showDecoder : Decoder Show
 showDecoder =
     decode Show
-        |> require "title" string
+        |> required "title" string
         |> optional "description" string                         
         |> optional "rating" int
-        |> require "genres" (list string)
+        |> required "genres" (list string)
 ```
 	                </script>
                 </section>
