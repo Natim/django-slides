@@ -169,7 +169,7 @@ $ elm-package install NoRedInk/elm-decode-pipeline
 ## Décoder avec `Json.Decode.Pipeline`
 
 ```elm
-import Json.Decode exposing (string, int, Decoder, list)
+import Json.Decode exposing (string, int, Decoder, list, maybe)
 import Json.Decode.Pipeline exposing (
     decode, required, optional)
 
@@ -177,8 +177,8 @@ showDecoder : Decoder Show
 showDecoder =
     decode Show
         |> required "title" string
-        |> optional "description" string ""
-        |> optional "rating" int 0
+        |> optional "description" (maybe string) Nothing
+        |> optional "rating" (maybe int) Nothing
         |> required "genres" (list string)
 ```
 	                </script>
