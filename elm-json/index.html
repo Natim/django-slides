@@ -177,8 +177,8 @@ showDecoder : Decoder Show
 showDecoder =
     decode Show
         |> required "title" string
-        |> optional "description" string                         
-        |> optional "rating" int
+        |> optional "description" string ""
+        |> optional "rating" int 0
         |> required "genres" (list string)
 ```
 	                </script>
