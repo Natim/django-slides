@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>Use JSON encoder and decoder with Elm</title>
+		<title>Scripts et Services Web avec AsyncIO et Python 3.7</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -26,19 +26,9 @@
 			<div class="slides">
                 <section data-markdown>
 	                <script type="text/template">
-# Elm JSON
+# AsyncIO et Python&nbsp;3.7
 
-by @Natim
-	                </script>
-                </section>
-
-                <section data-markdown>
-	                <script type="text/template">
-## Elm — Gérer du JSON
-
-1. Pour utiliser les données du `JSON`, il faut mettre à jour le `Model`
-2. Le `Model` est fortement typé
-3. La mise à jour du `Model` se fait via les événements
+Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 	                </script>
                 </section>
 
@@ -47,37 +37,83 @@ by @Natim
 # Petit sondage
 	                </script>
                 </section>
+
                 <section data-markdown>
 	                <script type="text/template">
-## Qui fait des applications front-end ?
+## Qui a déjà entendu parlé de NodeJS ?
 
-i.e: React.js / Angular.js / Ember.js / Vue.js
+(Javascript côté server)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Qui a déjà entendu parlé de Go ?
+
+![Go Gopher](go-gopher.jpg)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Qui a déjà entendu parlé de AsyncIO / Twisted / Tornado / Greenlet ?
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Qui a déjà utilisé
+## AsyncIO avec Python 3.5 ?
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## IO Loop un concept révolutionnaire
+![Coroutine](coroutine.jpg)
+                        
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Définir le type de record
+## Définir une coroutine
 
-```elm
-type alias Show =
-    { title : String
-    , description : Maybe String
-    , rating : Maybe Int
-    , genres : List Genre
-    }
+```python
+import asyncio
 
-type alias Genre =
-    String
+
+async def my_coroutine():
+    """The keyword async makes it a coroutine.
+    In the end it looks like a Python function.
+    """    
+    return "That's it"
+
+loop = asyncio.get_event_loop()
+result = loop.run_until_complete(my_coroutine())
+
+print(result)
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Définir le type de record
+## Définir une coroutine
 
-1. On créé un type de record
-2. Tous les champs facultatifs sont des `Maybe`
-3. On peut utiliser des sous records pour les objets imbriqués
+```python
+import asyncio
+
+async def my_coroutine():
+    """But this Python function has got a unique power.
+    It can use the await keyword.
+    """
+    await asyncio.sleep(3)
+    return "That's it"
+
+loop = asyncio.get_event_loop()
+result = loop.run_until_complete(my_coroutine())
+
+print(result)
+```
 	                </script>
                 </section>
                 <section data-markdown>
