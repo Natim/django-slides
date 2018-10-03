@@ -56,7 +56,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 
                 <section data-markdown>
 	                <script type="text/template">
-## Qui a déjà entendu parlé de AsyncIO / Twisted / Tornado / Greenlet ?
+## Qui a déjà entendu parlé de AsyncIO / Twisted / Tornado / Gevent / Greenlet ?
 	                </script>
                 </section>
 
@@ -69,7 +69,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 
                 <section data-markdown>
 	                <script type="text/template">
-## IO Loop un concept révolutionnaire
+## Event Loop un concept révolutionnaire
 ![Coroutine](coroutine.jpg)
                         
 	                </script>
@@ -118,35 +118,53 @@ print(result)
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Exemple de record
+## aiohttp : client et server
 
-```json
-{
-  "title": "Stranger Things",
-  "description": "A kid disapears...",
-  "rating": 4,
-  "genres": ["SciFi", "Thriller"]
-}
-```
-```json
-{
-  "title": "Stranger Things",
-  "genres": []
-}
+```python
+import aiohttp
+
+
+async def create_todo(title, description):
+  async with aiohttp.ClientSession() as session:
+    url = "https://kinto.dev.mozaws.net/v1/.../todo/records"
+    todo = {"title": title, "description": description}
+    async with session.post(url, json={"data": todo}) as r:
+      r.raise_for_status()
+      return await r.json()
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Préparer le `Model`
 
-```elm
-type alias Model = { shows : List Show }
+## asyncio.gather()
+
+```python
+import asyncio
+
+async def main():
+  TODOS = (
+     ("Ménage", "Passer un coup dans les sanitaires"),
+     ("Lessive", "Changer les draps")
+  )
+  actions = [create_todo(t, d) for t, d in TODOS]
+  results = await asyncio.gather(*actions)
+  print([r["data"]["id"] for r in results])
 
 
-type alias Data = { data : List Show }
+loop = asyncio.get_event_loop()
+result = loop.run_until_complete(main())
 ```
 	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## CPU Bound and IO Bound : Le combo gagnant
+
+- CPU bound : Le processeur tourne à 100%. Un plus gros processeur permet d'aller plus vite.
+- IO bound : Le processeur passe sont temps à attendre sur les entrées-sorties. Un disque SSD ou une plus grosse connexion internet permettent d'aller plus vite.
+
+                    </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
