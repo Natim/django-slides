@@ -29,6 +29,8 @@
 # AsyncIO et Python&nbsp;3.7
 
 Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
+
+[Chefclub 🄯 2018](https://www.chefclub.tv/)
 	                </script>
                 </section>
 
@@ -50,7 +52,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 	                <script type="text/template">
 ## Qui a déjà entendu parlé de Go ?
 
-![Go Gopher](go-gopher.jpg)
+![Go Gopher](images/go-gopher.jpg)
 	                </script>
                 </section>
 
@@ -70,8 +72,23 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
                 <section data-markdown>
 	                <script type="text/template">
 ## Event Loop un concept révolutionnaire
-![Coroutine](coroutine.jpg)
-                        
+![Coroutine](images/coroutine.jpg)
+
+Il faut s'imaginer un buffer circulaire de coroutines                      
+
+Une coroutine peut avoir trois status : <br/>Ready, Wait, Done
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Event Loop un concept révolutionnaire
+
+Le CPU passe sur les coroutines et regarde leur status:
+- ``wait`` : on passe à la suivante
+- ``done`` :
+  - on l'enlève du buffer
+  - on passe la coroutine parente à ready
+- ``ready`` : on continue son execution
 	                </script>
                 </section>
                 <section data-markdown>
@@ -188,25 +205,27 @@ Avez-vous remarqué ? On parle rarement de **threads en Python** à cause du **G
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-### À cause du GIL un programme multi-threadé en Python est plus lent que sans thread
+### À cause du GIL un programme multi-thread en Python est plus lent que son pendant codé sans thread
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
 ## Premier cas d'usage
 Video Downloader / FFmpeg Encoder
+
+![Gusto](images/gusto.jpg)
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-![](yt-dl-ffmpeg-flow-chart.png)
+![Flow chart](images/yt-dl-ffmpeg-flow-chart.png)
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
 # L'idée
 
-- **Télécharger les vidéos aussi vite que possible**
+- <span style="color: #afa;">**Télécharger les vidéos aussi vite que possible**</span>
 - Dès qu'une vidéo est disponible l'encoder avec FFmpeg
 - Dès qu'une vidéo est encodée, l'uploader sur un serveur
 	                </script>
@@ -216,7 +235,7 @@ Video Downloader / FFmpeg Encoder
 # L'idée
 
 - Télécharger les vidéos aussi vite que possible
-- **Dès qu'une vidéo est disponible l'encoder avec FFmpeg**
+- <span style="color: #afa;">**Dès qu'une vidéo est disponible l'encoder avec FFmpeg**</span>
 - Dès qu'une vidéo est encodée, l'uploader sur un serveur
 	                </script>
                 </section>
@@ -226,7 +245,7 @@ Video Downloader / FFmpeg Encoder
 
 - Télécharger les vidéos aussi vite que possible
 - Dès qu'une vidéo est disponible l'encoder avec FFmpeg
-- **Dès qu'une vidéo est encodée, l'uploader sur un serveur**
+- <span style="color: #afa;">**Dès qu'une vidéo est encodée, l'uploader sur un serveur**</span>
 	                </script>
                 </section>
                 <section data-markdown>
@@ -280,14 +299,11 @@ async def encode_consumer(encoding_queue):
 ## Subprocesses
 
 ```python
-import asyncio
-
 async def call(args):
     proc = await asyncio.create_subprocess_exec(
-        *args,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE)
-
+        *args, stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
     stdout, stderr = await proc.communicate()
 
     print(f'[{cmd!r} exited with {proc.returncode}]')
@@ -304,6 +320,7 @@ asyncio.run(call(['youtube-dl', video_url]))
 	                <script type="text/template">
 ## Second cas d'usage
 Slack Bot / Led Screen
+![Merveille](images/chefclub-merveille.png)
 	                </script>
                 </section>
                 <section data-markdown>
@@ -373,7 +390,7 @@ async def screen_get(request):
 
                 <section data-markdown>
 	                <script type="text/template">
-## Un endpoint web pour l'écran LED
+## On lance le serveur web
 
 ```python
 from aiohttp import web
@@ -412,10 +429,10 @@ async def produce(queue):
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Un worker pour le Raspberry Pi
+## Lire la queue sans attendre
 
 ```python
-async def next_message(queue, buffer, blocking=False):
+async def next_message(queue, buffer, secondLine=False, blocking=False):
   try:
     if blocking:
       message = await queue.get()
@@ -424,7 +441,10 @@ async def next_message(queue, buffer, blocking=False):
   except asyncio.QueueEmpty:
     iter = None
   else:
-    iter = iter(write_first_line(buffer, message)
+    if not secondLine:
+      iter = iter(write_first_line(buffer, message)
+    else:
+      iter = iter(write_second_line(buffer, message)
   return iter
 ```
 	                </script>
@@ -432,6 +452,7 @@ async def next_message(queue, buffer, blocking=False):
 
                 <section data-markdown>
 	                <script type="text/template">
+## Faire défiler les messages
 ```python
 async def consume(queue):
   matrix = RGBMatrix()
