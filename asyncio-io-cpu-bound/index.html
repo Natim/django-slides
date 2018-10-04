@@ -88,8 +88,7 @@ async def my_coroutine():
     """    
     return "That's it"
 
-loop = asyncio.get_event_loop()
-result = loop.run_until_complete(my_coroutine())
+result = asyncio.run(my_coroutine())
 
 print(result)
 ```
@@ -109,8 +108,7 @@ async def my_coroutine():
     await asyncio.sleep(3)
     return "That's it"
 
-loop = asyncio.get_event_loop()
-result = loop.run_until_complete(my_coroutine())
+result = asyncio.run(my_coroutine())
 
 print(result)
 ```
@@ -151,200 +149,325 @@ async def main():
   results = await asyncio.gather(*actions)
   print([r["data"]["id"] for r in results])
 
-
-loop = asyncio.get_event_loop()
-result = loop.run_until_complete(main())
+result = asyncio.run(main())
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## CPU Bound and IO Bound : Le combo gagnant
-
-- CPU bound : Le processeur tourne à 100%. Un plus gros processeur permet d'aller plus vite.
-- IO bound : Le processeur passe sont temps à attendre sur les entrées-sorties. Un disque SSD ou une plus grosse connexion internet permettent d'aller plus vite.
-
+## CPU Bound et IO Bound
+### Le combo gagnant
                     </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Decoder le record
+## CPU Bound
 
-```elm
-import Json.Decode exposing (
-  Decoder, string, list, int, map4, field, maybe)
+Le processeur tourne à 100%.
 
+Un plus gros processeur permet d'aller plus vite.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## IO Bound
 
-decodeShow : Decoder Show
-decodeShow =
-    map4 Show
-        (field "title" string)
-        (maybe <| field "description" string)
-        (maybe <| field "rating" int)
-        (field "genres" <| list string)
+Le processeur passe sont temps à attendre sur les entrées-sorties. (iowait)
+
+Un disque SSD / une plus grosse connexion internet permettent d'aller plus vite.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Le GIL
+
+Avez-vous remarqué ? On parle rarement de **threads en Python** à cause du **Global Interpreter Lock** (GIL).
+
+[En savoir plus](https://www.metachris.com/2010/10/python-threads-and-the-global-interpreter-lock-gil/)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+### À cause du GIL un programme multi-threadé en Python est plus lent que sans thread
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Premier cas d'usage
+Video Downloader / FFmpeg Encoder
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+![](yt-dl-ffmpeg-flow-chart.png)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# L'idée
+
+- **Télécharger les vidéos aussi vite que possible**
+- Dès qu'une vidéo est disponible l'encoder avec FFmpeg
+- Dès qu'une vidéo est encodée, l'uploader sur un serveur
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# L'idée
+
+- Télécharger les vidéos aussi vite que possible
+- **Dès qu'une vidéo est disponible l'encoder avec FFmpeg**
+- Dès qu'une vidéo est encodée, l'uploader sur un serveur
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# L'idée
+
+- Télécharger les vidéos aussi vite que possible
+- Dès qu'une vidéo est disponible l'encoder avec FFmpeg
+- **Dès qu'une vidéo est encodée, l'uploader sur un serveur**
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## AsyncIO to the rescue
+
+- Le modèle producteur - consommateur
+- Subprocess asynchrones
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Les queues
+```python
+import asyncio
+
+loop = asyncio.get_event_loop()
+encoding_queue = asyncio.Queue(loop=loop)
+
+downloader = download_producer(encoding_queue, videos_url)
+encoder = encode_consumer(encoding_queue)
+
+loop.run_until_complete(asyncio.gather(downloader, encoder))
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Decoder le record `Show`
+## Les queues
 
-- Bien compter le bon nombre de champs `Json.Decode.map4`
-- Bien mettre les champs dans l'ordre du Model
-- On peut utiliser `<|` comme des pipes pour passer le resultat d'une
-  fonction en paramètres d'une autre.
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Decoder la liste de `Show`
+```python
+async def download_producer(encoding_queue, videos_url):
+  for video_url in videos_url:
+    video_id = await download_video(video_url)
+    await encoding_queue.put(video_id)
 
-```elm
-import Json.Decode as Decode
 
-decodeShows : Decode.Decoder Data
-decodeShows =
-    Decode.map1 Data
-        (Decode.field "data" <| Decode.list decodeShow)
+async def encode_consumer(encoding_queue):
+  await encoding_queue.put(video_id)
+  while True:
+    video_id = await encoding_queue.get()
+    if video_id is None:
+      # All videos have been encoded
+      break
+    await encode_video(video_id)
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Installer la lib `Json.Decode.Pipeline`
+## Subprocesses
 
-```sh
-$ elm-package install NoRedInk/elm-decode-pipeline
+```python
+import asyncio
+
+async def call(args):
+    proc = await asyncio.create_subprocess_exec(
+        *args,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE)
+
+    stdout, stderr = await proc.communicate()
+
+    print(f'[{cmd!r} exited with {proc.returncode}]')
+    if stdout:
+        print(f'[stdout]\n{stdout.decode()}')
+    if stderr:
+        print(f'[stderr]\n{stderr.decode()}')
+
+asyncio.run(call(['youtube-dl', video_url]))
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Décoder avec `Json.Decode.Pipeline`
+## Second cas d'usage
+Slack Bot / Led Screen
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## L'idée
 
-```elm
-import Json.Decode exposing (string, int, Decoder, list, maybe)
-import Json.Decode.Pipeline exposing (
-    decode, required, optional)
+- Permettre aux utilisateurs d'un serveur slack d'envoyer des messages sur un écran
+- Lire les messages au fur et à mesure et les faire défiler trois fois.
+- Deux lignes, chaque ligne est indépendante
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Quelques libs
 
-showDecoder : Decoder Show
-showDecoder =
-    decode Show
-        |> required "title" string
-        |> optional "description" (maybe string) Nothing
-        |> optional "rating" (maybe int) Nothing
-        |> required "genres" (list string)
+```python
+import asyncio
+
+from aiohttp import web
+import aioredis
+
+from .config import REDIS_DB, REDIS_HOST, REDIS_PORT
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Un endpoint web pour le bot
+
+```python
+async def bot_say_hook(request):
+  loop = asyncio.get_event_loop()
+  redis = await aioredis.create_redis(
+    (REDIS_HOST, REDIS_PORT), db=REDIS_DB, loop=loop
+  )
+
+  data = await request.post()
+
+  await redis.rpush("SPLASH_SCREEN", data["text"])
+  return web.Response(text="Entendu")
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Un endpoint web pour l'écran LED
+
+```python
+async def screen_get(request):
+  loop = asyncio.get_event_loop()
+  redis = await aioredis.create_redis(
+    (REDIS_HOST, REDIS_PORT), db=REDIS_DB, loop=loop
+  )
+
+  result = await redis.lpop("SPLASH_SCREEN",
+                            encoding="utf-8") 
+  if result:
+    return web.json_response({"message": result})
+
+  return web.json_response({"error": "Nothing"},
+                           status=404)
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Un endpoint web pour l'écran LED
+
+```python
+from aiohttp import web
+
+app = web.Application()
+app.add_routes([web.get('/bot', screen_get),
+                web.post('/bot', bot_say_hook)])
+
+web.run_app(app)
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Un worker pour le Raspberry Pi
+
+```python
+async def produce(queue):
+  async with aiohttp.ClientSession() as session:
+    async with session.get(BOT_URL) as resp:
+      if resp.status == 200:
+        body = await resp.json()
+        await queue.put(body["message"])
+
+  while True:
+    async with aiohttp.ClientSession() as session:
+      async with session.get(BOT_URL) as resp:
+        if resp.status == 200:
+          body = await resp.json()
+          await queue.put(body["message"])
+    await asyncio.sleep(10)
+
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Décoder avec `Json.Decode.Pipeline`
+## Un worker pour le Raspberry Pi
 
-```elm
-import Json.Decode exposing (Decoder, list)
-import Json.Decode.Pipeline exposing (
-    decode, required)
+```python
+async def next_message(queue, buffer, blocking=False):
+  try:
+    if blocking:
+      message = await queue.get()
+    else:
+      message = queue.get_nowait()
+  except asyncio.QueueEmpty:
+    iter = None
+  else:
+    iter = iter(write_first_line(buffer, message)
+  return iter
+```
+	                </script>
+                </section>
 
-decodeShows : Decoder Data
-decodeShows =
-    decode Data
-        |> required "data" (list showDecoder)
+                <section data-markdown>
+	                <script type="text/template">
+```python
+async def consume(queue):
+  matrix = RGBMatrix()
+  buffer = matrix.CreateFrameCanvas()
+  # wait for an item from the producer
+  iter1 = await next_message(queue, buffer, blocking=True)
+  if message2:
+    iter2 = await next_message(queue, buffer)
 
+  while True:
+    if iter1:
+      try:
+        next(iter1)
+      except StopIteration:
+        iter1 = await next_message(queue, buffer)
+    else:
+      iter1 = await next_message(queue, buffer)
+  
+    if iter2:
+      ...
+
+    matrix.SwapOnVSync(double_buffer)
+    await asyncio.sleep(0.02)
+    double_buffer.Clear()
 ```
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Avec `Json.Decode.Pipeline`
+## Async IO une révolution
 
-- Pas besoin de compter les champs
-- On peut facilement avoir `required`, `optional`, `hardcoded`
-- Notation plus élegante                        
+- Doper votre Python
+- Gestion des websockets
 	                </script>
                 </section>
-                <section data-markdown>
-	                <script type="text/template">
-# Faire un appel HTTP
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Installer le client HTTP
-```sh
-$ elm-package install elm-lang/http
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Écrire la commande
 
-```elm
-import Http
-
-type Msg = UpdateShows (Result Http.Error Data)
-
-uri =
-  "https://k.io/v1/buckets/default/collections/shows/records"
-
-getData : Cmd Msg
-getData =
-    Http.send UpdateShows <|
-        Http.get uri decodeShows
-
-init : ( Model, Cmd Msg )
-    ({ shows = [] }, getData)
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Gérer la réponse du server
-
-```elm
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        UpdateModel results ->
-            case results of
-                Ok r ->
-                    ({ model | shows = r.data }, Cmd.none)
-
-                Err err ->
-                    ( { model | error = err }, Cmd.none )
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Encoder du JSON
-
-```elm
-import Json.Encode as Encode
-
-encodeAnswer : String -> Encode.Value
-encodeAnswer answer =
-    Encode.object [ ( "answer", Encode.string answer ) ]
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Utiliser la valeur encodée
-
-```elm
-type alias Headers = List (String, String)
-
-answerResource : String ->  Headers -> Encode.Value -> HttpBuilder.RequestBuilder
-answerResource uri headers body =
-    HttpBuilder.post uri
-        |> HttpBuilder.withHeaders headers
-        |> HttpBuilder.withJsonBody body
-        |> Http.send AnswerResponse
-```
-	                </script>
-                </section>
 			</div>
 		</div>
 
