@@ -42,7 +42,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 
                 <section data-markdown>
 	                <script type="text/template">
-## Qui a déjà entendu parlé de NodeJS ?
+## Qui a déjà entendu parler de NodeJS ?
 
 (Javascript côté server)
 	                </script>
@@ -50,7 +50,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 
                 <section data-markdown>
 	                <script type="text/template">
-## Qui a déjà entendu parlé de Go ?
+## Qui a déjà entendu parler de Go ?
 
 ![Go Gopher](images/go-gopher.jpg)
 	                </script>
@@ -58,7 +58,7 @@ Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
 
                 <section data-markdown>
 	                <script type="text/template">
-## Qui a déjà entendu parlé de AsyncIO / Twisted / Tornado / Gevent / Greenlet ?
+## Qui a déjà entendu parler de AsyncIO / Twisted / Tornado / Gevent / Greenlet ?
 	                </script>
                 </section>
 
@@ -284,7 +284,6 @@ async def download_producer(encoding_queue, videos_url):
 
 
 async def encode_consumer(encoding_queue):
-  await encoding_queue.put(video_id)
   while True:
     video_id = await encoding_queue.get()
     if video_id is None:
@@ -410,12 +409,6 @@ web.run_app(app)
 
 ```python
 async def produce(queue):
-  async with aiohttp.ClientSession() as session:
-    async with session.get(BOT_URL) as resp:
-      if resp.status == 200:
-        body = await resp.json()
-        await queue.put(body["message"])
-
   while True:
     async with aiohttp.ClientSession() as session:
       async with session.get(BOT_URL) as resp:
@@ -432,7 +425,7 @@ async def produce(queue):
 ## Lire la queue sans attendre
 
 ```python
-async def next_message(queue, buffer, secondLine=False, blocking=False):
+async def next_message(queue, buffer, second_line=False, blocking=False):
   try:
     if blocking:
       message = await queue.get()
@@ -441,7 +434,7 @@ async def next_message(queue, buffer, secondLine=False, blocking=False):
   except asyncio.QueueEmpty:
     iter = None
   else:
-    if not secondLine:
+    if not second_line:
       iter = iter(write_first_line(buffer, message)
     else:
       iter = iter(write_second_line(buffer, message)
@@ -474,7 +467,7 @@ async def consume(queue):
     if iter2:
       ...
 
-    matrix.SwapOnVSync(double_buffer)
+    matrix.SwapOnVSync(buffer)
     await asyncio.sleep(0.02)
     double_buffer.Clear()
 ```
