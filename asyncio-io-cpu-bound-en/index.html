@@ -1,0 +1,510 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Scripts et Web services with AsyncIO and Python 3.7</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section data-markdown>
+	                <script type="text/template">
+# AsyncIO and Python&nbsp;3.7
+
+Rémy Hubscher — [@Natim](https://www.twitter.com/Natim)
+
+[Chefclub 🄯 2018](https://www.chefclub.tv/)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+# Quick polls
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Who heard about NodeJS?
+
+(Javascript on the server side)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Have anyone heard of Go?
+
+![Go Gopher](images/go-gopher.jpg)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Have anyone heard of Twisted / Tornado / Gevent / Greenlet?
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Have anyone worked with threads and Python?
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Who already worked with
+## AsyncIO and Python 3.5?
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Event Loop is a revolution
+![Coroutine](images/coroutine.jpg)
+
+You need to think of a circular buffer.
+
+A coroutine can be in 3 given states : <br/>Ready, Wait, Done
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Event Loop is a revolution
+
+The CPU will look at each coroutine current state:
+- ``wait`` : we pass and go to the next one
+- ``done`` :
+  - we remove it from the buffer
+  - we set the parent coroutine state to ready
+- ``ready`` : we resume the coroutine execution
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## How to define a coroutine?
+
+```python
+import asyncio
+
+
+async def my_coroutine():
+    """The keyword async makes it a coroutine.
+    In the end it looks like a Python function.
+    """    
+    return "That's it"
+
+result = asyncio.run(my_coroutine())
+
+print(result)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## How to define a coroutine?
+
+```python
+import asyncio
+
+async def my_coroutine():
+    """But this Python function has got a unique power.
+    It can use the await keyword.
+    """
+    await asyncio.sleep(3)
+    return "That's it"
+
+result = asyncio.run(my_coroutine())
+
+print(result)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## aiohttp : HTTP client and server
+
+```python
+import aiohttp
+
+
+async def create_todo(title, description):
+  async with aiohttp.ClientSession() as session:
+    url = "https://kinto.dev.mozaws.net/v1/.../todo/records"
+    todo = {"title": title, "description": description}
+    async with session.post(url, json={"data": todo}) as r:
+      r.raise_for_status()
+      return await r.json()
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+
+## asyncio.gather()
+
+```python
+import asyncio
+
+async def main():
+  TODOS = (
+     ("Housework", "Clean the bathroom and lavatory"),
+     ("Laundry", "Change the bed sheets")
+  )
+  actions = [create_todo(t, d) for t, d in TODOS]
+  results = await asyncio.gather(*actions)
+  print([r["data"]["id"] for r in results])
+
+result = asyncio.run(main())
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## CPU Bound et IO Bound
+### The winning combo
+                    </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## CPU Bound
+
+The CPU runs at 100%
+
+Using a faster and more powerful CPU will run the program faster.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## IO Bound
+
+Most of the time the CPU is waiting on Input/Output. (iowait)
+
+A SSD drive or a larger internet connection will run the program faster.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## The GIL
+
+Have you noticed? We rarely talk about **threads with Python** because of the **Global Interpreter Lock** (GIL).
+
+[Learn more about the GIL](https://www.metachris.com/2010/10/python-threads-and-the-global-interpreter-lock-gil/)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+### Because of the GIL a multi-threaded program in Python is often slower than its threadless counterpart.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## First use-case
+Video Downloader / FFmpeg Encoder
+
+![Gusto](images/gusto.jpg)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+![Flow chart](images/yt-dl-ffmpeg-flow-chart.png)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# The plan
+
+- <span style="color: #afa;">**Download videos as quickly as possible**</span>
+- As soon as a video has been downloaded, encode it with FFmpeg
+- As soon as a video has been encoded, upload it to the CDN
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# The plan
+
+- Download videos as quickly as possible
+- <span style="color: #afa;">**As soon as a video has been downloaded, encode it with FFmpeg**</span>
+- As soon as a video has been encoded, upload it to the CDN
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# The plan
+
+- Download videos as quickly as possible
+- As soon as a video has been downloaded, encode it with FFmpeg
+- <span style="color: #afa;">**As soon as a video has been encoded, upload it to the CDN**</span>
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## AsyncIO to the rescue
+
+- The Produceur Consumer design pattern.
+- Async subprocesses
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Queues
+```python
+import asyncio
+
+loop = asyncio.get_event_loop()
+encoding_queue = asyncio.Queue(loop=loop)
+
+downloader = download_producer(encoding_queue, videos_url)
+encoder = encode_consumer(encoding_queue)
+
+loop.run_until_complete(asyncio.gather(downloader, encoder))
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Queues
+
+```python
+async def download_producer(encoding_queue, videos_url):
+  for video_url in videos_url:
+    video_id = await download_video(video_url)
+    await encoding_queue.put(video_id)
+
+
+async def encode_consumer(encoding_queue):
+  while True:
+    video_id = await encoding_queue.get()
+    if video_id is None:
+      # All videos have been encoded
+      break
+    await encode_video(video_id)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Subprocesses
+
+```python
+async def call(args):
+    proc = await asyncio.create_subprocess_exec(
+        *args, stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    stdout, stderr = await proc.communicate()
+
+    print(f'[{cmd!r} exited with {proc.returncode}]')
+    if stdout:
+        print(f'[stdout]\n{stdout.decode()}')
+    if stderr:
+        print(f'[stderr]\n{stderr.decode()}')
+
+asyncio.run(call(['youtube-dl', video_url]))
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Second use-case
+Slack Bot / Led Screen
+![Merveille](images/chefclub-merveille.png)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## The plan
+
+- Allow members of a Slack channel to write messages on the screen
+- Display messages on the fly and scroll each of them three time on th screen
+- Two independant lines
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## A couple of libs
+
+```python
+import asyncio
+
+from aiohttp import web
+import aioredis
+
+from .config import REDIS_DB, REDIS_HOST, REDIS_PORT
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## A web api endpoint for the bot
+
+```python
+async def bot_say_hook(request):
+  redis = await aioredis.create_redis(
+    (REDIS_HOST, REDIS_PORT), db=REDIS_DB
+  )
+
+  data = await request.post()
+
+  await redis.rpush("SPLASH_SCREEN", data["text"])
+  return web.Response(text="Copy that")
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## A web endpoint for the LED screen
+
+```python
+async def screen_get(request):
+  redis = await aioredis.create_redis(
+    (REDIS_HOST, REDIS_PORT), db=REDIS_DB
+  )
+
+  result = await redis.lpop("SPLASH_SCREEN",
+                            encoding="utf-8") 
+  if result:
+    return web.json_response({"message": result})
+
+  return web.json_response({"error": "Nothing"},
+                           status=404)
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## We run the web server
+
+```python
+from aiohttp import web
+
+app = web.Application()
+app.add_routes([web.get('/bot', screen_get),
+                web.post('/bot', bot_say_hook)])
+
+web.run_app(app)
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## A worker for our Raspberry Pi
+
+```python
+async def produce(queue):
+  while True:
+    async with aiohttp.ClientSession() as session:
+      async with session.get(BOT_URL) as resp:
+        if resp.status == 200:
+          body = await resp.json()
+          await queue.put(body["message"])
+    await asyncio.sleep(10)
+
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## How to read the queue without waiting?
+
+```python
+async def next_message(queue, buffer, second_line=False, blocking=False):
+  try:
+    if blocking:
+      message = await queue.get()
+    else:
+      message = queue.get_nowait()
+  except asyncio.QueueEmpty:
+    iter = None
+  else:
+    if not second_line:
+      iter = iter(write_first_line(buffer, message)
+    else:
+      iter = iter(write_second_line(buffer, message)
+  return iter
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Faire défiler les messages
+```python
+async def consume(queue):
+  matrix = RGBMatrix()
+  buffer = matrix.CreateFrameCanvas()
+  # wait for an item from the producer
+  iter1 = await next_message(queue, buffer, blocking=True)
+  if message2:
+    iter2 = await next_message(queue, buffer)
+
+  while True:
+    if iter1:
+      try:
+        next(iter1)
+      except StopIteration:
+        iter1 = await next_message(queue, buffer)
+    else:
+      iter1 = await next_message(queue, buffer)
+  
+    if iter2:
+      ...
+
+    matrix.SwapOnVSync(buffer)
+    await asyncio.sleep(0.02)
+    double_buffer.Clear()
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## AsyncIO a revolution
+
+- Dope your Python
+- Handle lots of websockets
+	                </script>
+                </section>
+
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
