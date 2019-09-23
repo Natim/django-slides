@@ -1,0 +1,2 @@
+all:
+	parcel index.html

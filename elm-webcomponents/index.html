@@ -1,0 +1,375 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>How to integrate Javascript libs with Elm ?</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <script src="good-map/good-map.js" async defer></script>
+  
+        <style>
+          good-map {
+            display: block;
+            height: 400px;
+          }
+        </style>
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+                <section data-markdown>
+	                <script type="text/template">
+                        # Elm + JS = 💕
+
+                        Rennes JS — 25 septembre 2019
+                        
+                        @Natim
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+# Comment intégrer du JS ?
+
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Comment intégrer du JS ?
+
+1. Porter la lib en Elm
+2. Utiliser un canal de communication appelé Ports
+3. Charger des WebComponents depuis Elm
+4. Livrer son appli Elm comme un webcomponent
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+# Porter la lib en Elm
+
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+                        ## Écrire un composant Elm
+
+                        - C'est parfois possible
+                        - Ça permet de bénéficier des avantages de Elm
+                        - Aucune intégration de JS n'est nécessaire
+
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# Utiliser les ports
+
+Exemple d'un store persistant dans LocalStorage.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Canal de communication Client / Server
+
+![Client/Server](client-server.png)
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir un port - Côté JS
+                        
+```javascript
+const storeKey = "chefclub-catalog";
+
+var app = Elm.Main.init({
+  node: document.getElementById('elm'),
+  flags: { rawStore: localStorage[storeKey] || "" }
+});
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+                        ## Définir un port - Côté JS
+
+                        De Elm vers JS
+                        
+```javascript
+// Save store in localstorage
+app.ports.saveStore.subscribe((rawStore) => {
+  localStorage[storeKey] = rawStore;
+});
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir un port - Côté JS
+
+De JS vers Elm
+```javascript
+// Refresh session when changes in another tab/window
+window.addEventListener("storage", (event) => {
+  if (event.storageArea === localStorage &&
+      event.key === storeKey) {
+    app.ports.storeChanged.send(event.newValue);
+  }
+}, false);
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir un port - Côté Elm
+
+De Elm vers JS
+```elm
+port saveStore : String -> Cmd Msg
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+  case msg of
+    Save ->
+      (model, saveStore model.store)
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Définir un port - Côté Elm
+
+De JS vers Elm
+```elm
+port storeChanged : (String -> Msg) -> Sub Msg
+
+subscriptions : Model -> Sub Msg
+subscriptions =
+    storeChanged UpdateStore
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+  case msg of
+    UpdateStore store ->
+      ({ model | store = store }, Cmd.none)
+
+```
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Les avantages des ports
+
+- Un protocole de communication définit et sécurisé
+- Permet d'appeler toutes les API JS disponible
+- Garantie que les données en entrées sont valides
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Les inconvénients des ports
+
+- Nécessite d'écrire et de maintenir du JavaScript
+- Maintenir un protocole d'API entre Elm et JS
+- Difficulté de partager du DOM généré par Elm avec du DOM JS.
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# Utiliser les web components
+
+Intégrer une carte Google Maps dans notre appli Elm
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Sont-ils prêts ?
+
+![WebComponents](canIuseWebComponents.png)
+
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Que sont les web components ?
+
+- Custom elements, permettent la création de balise personnalisées
+- Shadow DOM, définit les règles pour avoir des styles et balisages spécifiques à un web component
+
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Catalogue
+
+https://www.webcomponents.org/
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Créer un web component from scratch
+
+```js
+customElements.define('good-map',
+      class extends HTMLElement {
+
+  static get observedAttributes() {
+    return [
+      'api-key', 'zoom',
+      'latitude', 'longitude', 'map-options'
+    ];
+  }
+
+  attributeChangedCallback(name, oldVal, val) {
+    switch (name) {
+      case 'api-key':
+        this.apiKey = val;
+        break;
+      case 'zoom':
+      case 'latitude':
+      case 'longitude':
+        this[name] = parseFloat(val);
+        break;
+      case 'map-options':
+        this.mapOptions = JSON.parse(val);
+        break
+    }
+  }
+
+  constructor() {
+    super();
+
+    this.map = null;
+    this.apiKey = null;
+    this.zoom = null;
+    this.latitude = null;
+    this.longitude = null;
+    this.mapOptions = {};
+  }
+
+  connectedCallback() {
+    loadGoogleMaps(this.apiKey).then(() => {
+      if (!this.mapOptions.zoom) {
+        this.mapOptions.zoom = this.zoom || 0;
+      }
+      if (!this.mapOptions.center) {
+        this.mapOptions.center = {
+          lat: this.latitude || 0,
+          lng: this.longitude || 0
+        };
+      }
+      this.map = new google.maps.Map(this, this.mapOptions);
+      this.dispatchEvent(new CustomEvent(
+        'google-map-ready', { detail: this.map }
+      ));
+    });
+  }
+});
+```
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Utiliser notre web component
+
+![good-map](good-map.png)
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Utiliser notre web component en JS
+
+<good-map
+    api-key="AIzaSyCwFpb-7egXk83gMwyuofJZrkIP4XlgD28"
+    longitude="-1.694661"
+    latitude="48.106661"
+    zoom="17"></good-map>
+
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+## Utiliser notre web component en Elm
+
+```elm
+goodMap : List (Attribute a) -> List (Html a) -> Html a
+goodMap =
+    Html.node "good-map"
+
+main =
+    goodMap
+        [ attribute "api-key" "AIzaS...gD28"
+        , attribute "latitude" "48.106661"
+        , attribute "longitude" "-1.694661"
+        , attribute "zoom" "17"
+        ]
+        []
+```
+
+<a href="http://localhost:1234">Tester</a>
+	                </script>
+                </section>
+                
+                <section data-markdown>
+	                <script type="text/template">
+# Un web component en Elm
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+                        ## Faire un webcomponent
+```js
+import elmWebComponents from '@teamthread/elm-web-components'
+import ElmApp from './Main.elm'
+
+elmWebComponents.register('my-elm-component', ElmApp.Main)
+```
+
+```html
+<my-elm-component name="Jack"></my-elm-component>
+```                        
+	                </script>
+                </section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			// More info https://github.com/hakimel/reveal.js#configuration
+			Reveal.initialize({
+				history: true,
+
+				// More info https://github.com/hakimel/reveal.js#dependencies
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
