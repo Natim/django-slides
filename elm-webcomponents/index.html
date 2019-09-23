@@ -343,14 +343,29 @@ main =
 import elmWebComponents from '@teamthread/elm-web-components'
 import ElmApp from './Main.elm'
 
+elmWebComponents.configure('0.19')
+
 elmWebComponents.register('my-elm-component', ElmApp.Main)
 ```
 
 ```html
 <my-elm-component name="Jack"></my-elm-component>
 ```                        
+<a href="http://localhost:1234">Tester</a>
 	                </script>
                 </section>
+
+                                <section data-markdown>
+	                <script type="text/template">
+## Conclusion
+
+1. Porter la lib en Elm
+2. Utiliser un canal de communication appelé Ports
+3. Charger des WebComponents depuis Elm
+4. Charger son appli Elm comme un webcomponent
+	                </script>
+                </section>
+
 			</div>
 		</div>
 
