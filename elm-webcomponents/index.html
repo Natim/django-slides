@@ -4,7 +4,7 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-		<title>How to integrate Javascript libs with Elm ?</title>
+		<title>How to integrate Javascript libs with Elm?</title>
 
 		<link rel="stylesheet" href="css/reveal.css">
 		<link rel="stylesheet" href="css/theme/black.css">
@@ -54,7 +54,7 @@
 	                <script type="text/template">
 ## Comment intégrer du JS ?
 
-1. Porter la lib en Elm
+1. Réécrire la lib en Elm
 2. Utiliser un canal de communication appelé Ports
 3. Charger des WebComponents depuis Elm
 4. Livrer son appli Elm comme un webcomponent
@@ -95,7 +95,8 @@ Exemple d'un store persistant dans LocalStorage.
                 <section data-markdown>
 	                <script type="text/template">
 ## Définir un port - Côté JS
-                        
+
+Setup
 ```javascript
 const storeKey = "chefclub-catalog";
 
@@ -177,9 +178,9 @@ update msg model =
 	                <script type="text/template">
 ## Les avantages des ports
 
-- Un protocole de communication définit et sécurisé
-- Permet d'appeler toutes les API JS disponible
-- Garantie que les données en entrées sont valides
+- Un protocole de communication défini et sécurisé
+- Permet d'appeler toutes les API JS disponibles
+- Garantie que les données en entrée sont valides
 	                </script>
                 </section>
                 <section data-markdown>
