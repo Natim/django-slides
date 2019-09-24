@@ -19,6 +19,23 @@
             display: block;
             height: 400px;
           }
+
+          .left {
+           left:-8.33%;
+           text-align: center;
+           float: left;
+           width:50%;
+           z-index:-10;
+          }
+
+          .right {
+           left:31.25%;
+           top: 75px;
+           float: right;
+           text-align: center;
+           z-index:-10;
+           width:50%;
+          }
         </style>
 
 		<!-- Printing and PDF exports -->
@@ -55,15 +72,16 @@
 ## Comment intégrer du JS ?
 
 1. Réécrire la lib en Elm
-2. Utiliser un canal de communication appelé Ports
-3. Charger des WebComponents depuis Elm
-4. Livrer son appli Elm comme un webcomponent
+2. Initialiser son appli avec les Flags
+3. Utiliser un canal de communication appelé Ports
+4. Charger des WebComponents depuis Elm
+5. Livrer son appli Elm comme un webcomponent
 	                </script>
                 </section>
 
                 <section data-markdown>
 	                <script type="text/template">
-# Porter la lib en Elm
+# Réécrire le composant en Elm
 
 	                </script>
                 </section>
@@ -80,6 +98,59 @@
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
+## Catalogue
+
+https://package.elm-lang.org/
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+# Initialiser son composant avec des Flags
+
+Exemple d'un viewer JSON
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Initialiser son composant avec des Flags
+
+<div class="left">
+Côté JavaScript
+
+![Flags JS](flags.png)
+</div>
+
+<div class="right">
+Côté Elm
+
+![Flags Elm](flags-elm.png)
+</div>
+
+	                </script>
+                </section>
+                
+                <section data-markdown>
+	                <script type="text/template">
+## Les avantages des flags
+
+- Composant initialisé avec des données fraîches
+- Un composant autonome par la suite
+- Garantie que les données en entrée sont valides
+- Pas de décodeur à écrire
+- Pas de délais au chargement du composant
+	                </script>
+                </section>
+                <section data-markdown>
+	                <script type="text/template">
+## Les inconvénients des flags
+
+- Une fois le composant chargé on ne peut plus modifier les flags
+- Si le type des données en entrées sont incorrectes, le composant ne démarre pas
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
 # Utiliser les ports
 
 Exemple d'un store persistant dans LocalStorage.
@@ -87,91 +158,58 @@ Exemple d'un store persistant dans LocalStorage.
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Canal de communication Client / Server
+## Canal de communication bi&#8209;directionnel
 
 ![Client/Server](client-server.png)
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Définir un port - Côté JS
+## Définir un port
 
-Setup
-```javascript
-const storeKey = "chefclub-catalog";
+Création de l'app en JavaScript
 
-var app = Elm.Main.init({
-  node: document.getElementById('elm'),
-  flags: { rawStore: localStorage[storeKey] || "" }
-});
-```
+![setup](port-setup.png)
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-                        ## Définir un port - Côté JS
+                        ## Définir un port
 
-                        De Elm vers JS
+                        Elm envoie une valeur à Javascript
                         
-```javascript
-// Save store in localstorage
-app.ports.saveStore.subscribe((rawStore) => {
-  localStorage[storeKey] = rawStore;
-});
-```
+<div class="left">
+Côté Elm
+
+![Port Cmd Elm](port-saveStore-elm.png)
+
+</div>
+
+<div class="right">
+Côté JavaScript
+
+![Port Subscribe JS](port-saveStore-js.png)
+</div>
+                        
 	                </script>
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Définir un port - Côté JS
+## Définir un port
 
-De JS vers Elm
-```javascript
-// Refresh session when changes in another tab/window
-window.addEventListener("storage", (event) => {
-  if (event.storageArea === localStorage &&
-      event.key === storeKey) {
-    app.ports.storeChanged.send(event.newValue);
-  }
-}, false);
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Définir un port - Côté Elm
+JavaScript envoie une valeur à Elm
+<div class="left">
+Côté JavaScript
 
-De Elm vers JS
-```elm
-port saveStore : String -> Cmd Msg
+![Port Send JS](port-send-js.png)
+</div>
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-  case msg of
-    Save ->
-      (model, saveStore model.store)
-```
-	                </script>
-                </section>
-                <section data-markdown>
-	                <script type="text/template">
-## Définir un port - Côté Elm
+<div class="right">
+Côté Elm
 
-De JS vers Elm
-```elm
-port storeChanged : (String -> Msg) -> Sub Msg
+![Port Sub Elm](port-send-elm.png)
 
-subscriptions : Model -> Sub Msg
-subscriptions =
-    storeChanged UpdateStore
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-  case msg of
-    UpdateStore store ->
-      ({ model | store = store }, Cmd.none)
-
-```
+</div>
 	                </script>
                 </section>
                 <section data-markdown>
@@ -189,7 +227,8 @@ update msg model =
 
 - Nécessite d'écrire et de maintenir du JavaScript
 - Maintenir un protocole d'API entre Elm et JS
-- Difficulté de partager du DOM généré par Elm avec du DOM JS.
+- Nécessite des décodeurs pour garantir le typage API
+- Impossible de modifier le DOM rendu par Elm en JS
 	                </script>
                 </section>
                 <section data-markdown>
@@ -211,8 +250,8 @@ Intégrer une carte Google Maps dans notre appli Elm
 	                <script type="text/template">
 ## Que sont les web components ?
 
-- Custom elements, permettent la création de balise personnalisées
-- Shadow DOM, définit les règles pour avoir des styles et balisages spécifiques à un web component
+- **Custom elements**, permettent la création de balise personnalisées
+- **Shadow DOM**, définit les règles pour avoir des styles et balisages spécifiques à un web component
 
 	                </script>
                 </section>
@@ -225,71 +264,25 @@ https://www.webcomponents.org/
                 </section>
                 <section data-markdown>
 	                <script type="text/template">
-## Créer un web component from scratch
+## Créer un web component
 
-```js
-customElements.define('good-map',
-      class extends HTMLElement {
+![WebComponents](custom-element-1.png)
+	                </script>
+                </section>
 
-  static get observedAttributes() {
-    return [
-      'api-key', 'zoom',
-      'latitude', 'longitude', 'map-options'
-    ];
-  }
+                
+                <section data-markdown>
+	                <script type="text/template">
+## Créer un web component
 
-  attributeChangedCallback(name, oldVal, val) {
-    switch (name) {
-      case 'api-key':
-        this.apiKey = val;
-        break;
-      case 'zoom':
-      case 'latitude':
-      case 'longitude':
-        this[name] = parseFloat(val);
-        break;
-      case 'map-options':
-        this.mapOptions = JSON.parse(val);
-        break
-    }
-  }
-
-  constructor() {
-    super();
-
-    this.map = null;
-    this.apiKey = null;
-    this.zoom = null;
-    this.latitude = null;
-    this.longitude = null;
-    this.mapOptions = {};
-  }
-
-  connectedCallback() {
-    loadGoogleMaps(this.apiKey).then(() => {
-      if (!this.mapOptions.zoom) {
-        this.mapOptions.zoom = this.zoom || 0;
-      }
-      if (!this.mapOptions.center) {
-        this.mapOptions.center = {
-          lat: this.latitude || 0,
-          lng: this.longitude || 0
-        };
-      }
-      this.map = new google.maps.Map(this, this.mapOptions);
-      this.dispatchEvent(new CustomEvent(
-        'google-map-ready', { detail: this.map }
-      ));
-    });
-  }
-});
-```
+![WebComponents](custom-element-2.png)
+![WebComponents](custom-element-3.png)
 	                </script>
                 </section>
 
                 <section data-markdown>
 	                <script type="text/template">
-## Utiliser notre web component
+## Utiliser son web component
 
 ![good-map](good-map.png)
 	                </script>
@@ -312,20 +305,8 @@ customElements.define('good-map',
 	                <script type="text/template">
 ## Utiliser notre web component en Elm
 
-```elm
-goodMap : List (Attribute a) -> List (Html a) -> Html a
-goodMap =
-    Html.node "good-map"
+![WebComponents](webcomponent-from-elm.png)
 
-main =
-    goodMap
-        [ attribute "api-key" "AIzaS...gD28"
-        , attribute "latitude" "48.106661"
-        , attribute "longitude" "-1.694661"
-        , attribute "zoom" "17"
-        ]
-        []
-```
 
 <a href="http://localhost:1234">Tester</a>
 	                </script>
@@ -340,14 +321,7 @@ main =
                 <section data-markdown>
 	                <script type="text/template">
                         ## Faire un webcomponent
-```js
-import elmWebComponents from '@teamthread/elm-web-components'
-import ElmApp from './Main.elm'
-
-elmWebComponents.configure('0.19')
-
-elmWebComponents.register('my-elm-component', ElmApp.Main)
-```
+![WebComponents](elm-component-register.png)
 
 ```html
 <my-elm-component name="Jack"></my-elm-component>
@@ -356,18 +330,78 @@ elmWebComponents.register('my-elm-component', ElmApp.Main)
 	                </script>
                 </section>
 
-                                <section data-markdown>
+                <section data-markdown>
 	                <script type="text/template">
-## Conclusion
+                        # Conclusion
+	                </script>
+                </section>
+                
+                
+                <section data-markdown>
+	                <script type="text/template">
+                        ## 1. Utiliser une lib en Elm
 
-1. Porter la lib en Elm
-2. Utiliser un canal de communication appelé Ports
-3. Charger des WebComponents depuis Elm
-4. Charger son appli Elm comme un webcomponent
+                        - 🗽 À privilégier dans la mesure du possible
+                        - 🗞 Soit regarder ce qui existe
+                        - 🛸 Soit la réécrire soit même
 	                </script>
                 </section>
 
-			</div>
+                <section data-markdown>
+	                <script type="text/template">
+                        ## 2. Utiliser les flags
+
+                        - ⏯ Permet de supprimer une étape de loading
+                        - 💾 Composants réutilisables et configurables
+	                </script>
+                </section>
+
+                <section data-markdown>
+	                <script type="text/template">
+                        ## 3. Utiliser les ports
+
+                        - 🐢 Idéal pour manipuler des API JS depuis Elm
+                        - 🛑 À éviter pour manipuler l'affichage
+	                </script>
+                </section>
+
+			    <section data-markdown>
+	                <script type="text/template">
+                        ## 4. Utiliser un webcomponent JS en Elm
+
+                        - 🍱 Idéal pour déléguer une partie d'appli Elm à JS
+                        - 👨‍✈️ Idéal pour les widgets autonomes
+                        - 😽 S'adapte très bien à Elm
+                        - 🧤 Piloté par la modification des attributs DOM
+	                </script>
+                </section>
+
+			    <section data-markdown>
+	                <script type="text/template">
+                        ## 5. Utiliser un webcomponent Elm en JS
+
+                        - 🖥 Idéal pour intégrer un module d'affichage Elm dans une app JS
+                        - 🏅 API standardisée par rapport aux Flags ou Ports
+                        - 📬 Permet d'exposer les ports comme events DOM
+                        - 🐎  Intégration facile avec
+                          *@thread/elm&#8209;web&#8209;components*
+	                </script>
+                </section>
+			    <section data-markdown>
+	                <script type="text/template">
+                        # ❔ Questions ❓
+	                </script>
+                </section>
+			    <section data-markdown>
+	                <script type="text/template">
+                        # Merci  🙏
+                        
+                        Rennes JS — 25 septembre 2019
+                        
+                        @ Natim
+	                </script>
+                </section>
+            </div>
 		</div>
 
 		<script src="lib/js/head.min.js"></script>
