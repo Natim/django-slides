@@ -59,7 +59,7 @@
 
 - First specification written in 1973 by the NCSA
 - The goal is to delegate HTTP request handling to a CLI tool.
-- In October 2004, the RFC 3875 specify CGI version 1.1
+- In October 2004, the RFC 3875 specified CGI version 1.1
 </template>
 
 
@@ -75,7 +75,8 @@
 ## Web Server Gateway Interface
 
 - WSGI was originally specified as PEP-333 in 2003.
-- WSGI was created as an implementation-agnostic interface between web servers and web applications to standardize the way Python web frameworks worked.
+- An implementation-agnostic interface between web servers and web applications.
+- Aimed to standardize Python web frameworks.
 - In 2010, PEP-3333 updates the specification for Python 3.
 
 ![WSGI Python App](./images/wsgi-example.png)
@@ -93,8 +94,8 @@
 ## Async Server Gateway Interface
 
 - Wikipedia does not know about ASGI yet.
-- ASGI is the spiritual successor to WSGI.
-- AGSI intend to provide a standard interface for async-capable Python web servers.
+- It's the spiritual successor to WSGI.
+- Provides a standard interface for async Python web servers.
 </template>
 
 
@@ -111,7 +112,7 @@
 ## How does WSGI work?
     
 - WSGI passes an environ with the request information.
-- The Python application compute the response
+- The Python application computes the response
 - The response is sent back and a new request can be handled.
 
 </template>
@@ -125,13 +126,13 @@
 ## What's wrong with WSGI?
 
 1. If the response takes time, other clients have to wait.
-2. A worker cannot handle multiple client at the same time.
+2. A worker cannot handle multiple clients at the same time.
 3. To mitigate that we spawn multiple workers.
 </template>
 
 <template layout="title" type="text/x-markdown"
           backface="./images/cover-no-logo-bottom.png">
-## Does anyone had to work with websocket and Python?
+## Has anyone had to work with websocket and Python?
 </template>
 
 <template layout="bullets" type="text/x-markdown"
@@ -139,8 +140,8 @@
 
 ## Websockets
 
-- Websockets need a connection open with each user.
-- We can't use WSGI for that, because it doesn't fit in the request/response model.
+- Websockets need one connection per user.
+- It doesn't fit in WSGI request/response model.
 - We can't afford to have a worker per client.
 
 </template>
@@ -161,9 +162,9 @@
           backface="./images/cover-no-logo.png">
 ## HTTP/2
 
-- A unique connection for each user that stays open
+- A unique connection opened per user
 - A client state on the server side
-- A binary protocol that allow response for different requests to be mixed and prioritized
+- A binary protocol that allows response for different requests to be mixed
 </template>
 
 <template layout="bullets" type="text/x-markdown"
@@ -171,8 +172,8 @@
 ## HTTP/2
 
 - You can ask for multiple files without waiting for the answer
-- You can prioritized what response are the most important for you
-- The server can push you files that you may need without you requesting them.
+- You can prioritize what response are the most important to you
+- The server can push files you may need without you requesting them.
 
 </template>
 
@@ -187,7 +188,7 @@
           backface="./images/cover-no-logo.png">
 # To conclude on WSGI
 
-- WSGI server (uWSGI, gunicorn) are really good at hidding these restrictions.
+- WSGI servers (uWSGI, gunicorn) are really good at hidding these restrictions.
 - If the request/response model fits your needs, then WSGI is good enough.
 - Because the web is asynchroneous and WSGI is synchroneously waiting for the response,
 WSGI is limiting for the web as we use it today.
