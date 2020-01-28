@@ -58,6 +58,13 @@
 
 </template>
 
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+![Django Admin](./images/django-admin.png)
+
+</template>
+
 <template layout="bullets" type="text/x-markdown"
           backface="./images/cover-no-logo.png">
 
@@ -320,6 +327,16 @@ ASGI worker architecture instead and simplify architecture using channels backgr
 - To learn more please visit [getalma.eu](https://www.getalma.eu/)
 </template>
 
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+## How do I run my Django app with ASGI?
+
+    $ daphne myproject.asgi:application
+
+    $ uvicorn myproject.asgi:application
+    
+</template>
 
 
 <script src="./dist/highlight.min.js"></script>
