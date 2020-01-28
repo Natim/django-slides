@@ -1,0 +1,275 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>ASGI — Entering a new dimension</title>
+  <link rel="stylesheet" href="./dist/talkie.min.css">
+  <link rel="stylesheet" href="./dist/talkie-default.min.css">
+  <link rel="stylesheet" href="./dist/monokai_sublime.min.css">
+  <link rel="stylesheet" href="./dist/mozilla.css">
+</head>
+<body>
+
+<template layout="cover" type="text/x-markdown"
+          backface="./images/cover.png">
+
+
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+
+## Who am I?
+
+</template>
+
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-logo.png">
+## Who am I?
+
+- Rémy Hubscher — @natim
+- Python Backend developer from 2005
+- Worked with PeopleDoc, Mozilla, Chefclub, Alma
+
+![peopledoc](./images/logos/peopledoc.resized.jpg)
+![mozilla](./images/logos/mozilla-org.resized.png)
+![chefclub](./images/logos/chefclub.resized.png)
+
+![python](./images/logos/python.resized.png)
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+
+## Let me ask some questions
+
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+
+## Who heard of CGI?
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+## Common Gateway Interface
+
+- First specification written in 1973 by the NCSA
+- The goal is to delegate HTTP request handling to a CLI tool.
+- In October 2004, the RFC 3875 specify CGI version 1.1
+</template>
+
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+
+## Who is familiar with WSGI?
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## Web Server Gateway Interface
+
+- WSGI was originally specified as PEP-333 in 2003.
+- WSGI was created as an implementation-agnostic interface between web servers and web applications to standardize the way Python web frameworks worked.
+- In 2010, PEP-3333 updates the specification for Python 3.
+
+![WSGI Python App](./images/wsgi-example.png)
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+
+## Who heard of ASGI?
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## Async Server Gateway Interface
+
+- Wikipedia does not know about ASGI yet.
+- ASGI is the spiritual successor to WSGI.
+- AGSI intend to provide a standard interface for async-capable Python web servers.
+</template>
+
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+## Why not keep WSGI?
+
+![standards](./images/standards.png)
+</template>
+
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## How does WSGI work?
+    
+- WSGI passes an environ with the request information.
+- The Python application compute the response
+- The response is sent back and a new request can be handled.
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+![overview](./images/http-1.x.png)
+</template>
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## What's wrong with WSGI?
+
+1. If the response takes time, other clients have to wait.
+2. A worker cannot handle multiple client at the same time.
+3. To mitigate that we spawn multiple workers.
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+## Does anyone had to work with websocket and Python?
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+## Websockets
+
+- Websockets need a connection open with each user.
+- We can't use WSGI for that, because it doesn't fit in the request/response model.
+- We can't afford to have a worker per client.
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+![overview](./images/websockets.png)
+
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## What about HTTP/2 or HTTP/3?
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## HTTP/2
+
+- A unique connection for each user that stays open
+- A client state on the server side
+- A binary protocol that allow response for different requests to be mixed and prioritized
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## HTTP/2
+
+- You can ask for multiple files without waiting for the answer
+- You can prioritized what response are the most important for you
+- The server can push you files that you may need without you asking for them.
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+![overview](./images/http-2.x.png)
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+# To conclude on WSGI
+
+- WSGI server are really good at hidding this restriction. i.e uWSGI, gunicorn
+- If the request/response model fits your needs, then WSGI is good enough.
+- Because the web is asynchroneous and WSGI is synchroneously waiting for the response,
+WSGI is limiting for the web as we use it today.
+</template>
+
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo-bottom.png">
+# The ASGI promise
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## An event based protocol
+
+- Instead of describing request and response, ASGI describe events.
+- We have a ASGI server that keeps tab on client sockets. (i.e Daphne, Univcorn)
+- We have workers that handle events from the server.
+- A HTTP request is just another kind of event.
+- The ASGI server pushes new events to a queue.
+- You can use workers for async tasks as well.
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+## An asynchroneous server written in synchroneous mode.
+
+- Your worker don't have to be asynchroneous
+- Handling a task can be synchroneous
+- The server is handling all the asynchroneous complexity
+</template>
+
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## ASGI is already popular
+
+- ASGI is already mainstream in **startlette** and **fastapi**
+- Django 3 shipped an ASGI endpoint, next versions should embed more.
+- If you find yourself needing Celery, you can actually benefit from the
+ASGI worker architecture instead and simplify architecture.
+- If you want the most of ASGI and Django, you can start today with Django Channels.
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## As a conclusion
+
+- If you do backend web development in Python, you should poke around learn more about ASGI.
+- If you never heard about Starlette or FastAPI before, you should definitely try them.
+- If you never tried asyncio that's definitely a TODO item to add.
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-empty.png">
+
+- Thank you for your attention
+- My name is Rémy Hubscher — @natim
+- Feel free to ask me your questions.
+- [getalma.eu](https://www.getalma.eu/)
+</template>
+
+
+
+<script src="./dist/highlight.min.js"></script>
+<script src="./dist/talkie.js"></script>
+<script>
+var talkie = Talkie({wide: false});
+
+talkie.next.plug(talkie.control.keydown('s'));
+talkie.next.plug(talkie.control.keydown('n'));
+talkie.prev.plug(talkie.control.keydown('a'));
+talkie.prev.plug(talkie.control.keydown('p'));
+
+document.addEventListener('DOMContentLoaded', function() {
+  var slides = Array.prototype.slice.call(document.querySelectorAll('[layout]'));
+  talkie.changed.onValue(function(current) {
+    console.clear();
+    // print presenter notes
+    console.info(talkie.notes[current.getAttribute('page')]);
+  });
+});
+</script>
+</body>
+</html>
