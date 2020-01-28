@@ -28,7 +28,7 @@
 ## Who am I?
 
 - My name is Rémy Hubscher — [@natim](https://twitter.com/natim)
-- I am Python Backend developer from 2005
+- I am Python Backend developer since 2005
 - I Worked with PeopleDoc, Mozilla, Chefclub, Alma
 
 ![peopledoc](./images/logos/peopledoc.resized.jpg)
@@ -219,6 +219,16 @@
 
 <template layout="bullets" type="text/x-markdown"
           backface="./images/cover-no-logo.png">
+## HTTP/3
+
+- HTTP/3 was previously called QUICK.
+- It is an improvment of HTTP/2 that works on top of UDP instead of TCP
+- I encourage you to watch Daniel Stenberg's talk about HTTP/3 this afternoon.
+
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
 # To conclude on WSGI
 
 - WSGI servers (uWSGI, gunicorn) are really good at hidding these restrictions.
@@ -231,16 +241,23 @@
 # The ASGI promise
 </template>
 
+<template layout="title" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+
+![ASGI Architecture](./images/asgi.png)
+    
+</template>
+
 <template layout="bullets" type="text/x-markdown"
           backface="./images/cover-no-logo.png">
 ## An event based protocol
 
 - ASGI describes events instead of requests and responses.
 - ASGI servers keep tabs on client sockets. (i.e Daphne, Univcorn)
-- Workers handle events from the ASGI server.
-- A HTTP request is just another kind of event.
 - The ASGI server pushes new events to a queue.
-- You can use workers for async tasks as well.
+- Workers handle JSON events from the queue.
+- A HTTP request is just another kind of event.
+- You can use workers for async background tasks as well.
 </template>
 
 <template layout="bullets" type="text/x-markdown"
