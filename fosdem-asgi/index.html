@@ -223,8 +223,7 @@
 
 - WSGI servers (uWSGI, gunicorn) are really good at hidding these restrictions.
 - If the request/response model fits your needs, then WSGI is good enough.
-- Because the web is asynchroneous and WSGI is synchroneously waiting for the response,
-WSGI is limiting for the web as we use it today.
+- WSGI's synchronous response model is limiting for the asynchronous web we use today.
 </template>
 
 <template layout="title" type="text/x-markdown"
@@ -236,9 +235,9 @@ WSGI is limiting for the web as we use it today.
           backface="./images/cover-no-logo.png">
 ## An event based protocol
 
-- Instead of describing request and response, ASGI describe events.
-- We have a ASGI server that keeps tab on client sockets. (i.e Daphne, Univcorn)
-- We have workers that handle events from the server.
+- ASGI describes events instead of requests and responses.
+- ASGI servers keep tabs on client sockets. (i.e Daphne, Univcorn)
+- Workers handle events from the ASGI server.
 - A HTTP request is just another kind of event.
 - The ASGI server pushes new events to a queue.
 - You can use workers for async tasks as well.
@@ -247,11 +246,11 @@ WSGI is limiting for the web as we use it today.
 <template layout="bullets" type="text/x-markdown"
           backface="./images/cover-no-logo.png">
 
-## An asynchroneous server written in synchroneous mode.
+## An asynchronous server written in synchronous mode.
 
-- Your worker don't have to be asynchroneous
-- Handling a task can be synchroneous
-- The server is handling all the asynchroneous complexity
+- The server is handling all the asynchronous complexity
+- Handling a task can be synchronous
+- Your worker don't have to be asynchronous
 </template>
 
 
