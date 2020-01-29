@@ -293,7 +293,7 @@ def application(environ, start_response):
 ## An event based protocol
 
 - ASGI describes events instead of requests and responses.
-- ASGI servers keep tabs on client sockets. (i.e Daphne, Univcorn)
+- ASGI servers keep tabs on client sockets. (i.e Daphne, Uvicorn)
 - The ASGI server pushes new events to a queue.
 - Workers handle JSON events from the queue.
 - A HTTP request is just another kind of event.
