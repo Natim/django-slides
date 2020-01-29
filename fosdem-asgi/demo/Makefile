@@ -7,6 +7,9 @@ runserver:
 daphne:
 	daphne demo.asgi:application
 
+uvicorn:
+	uvicorn demo.asgi:application
+
 migrate:
 	python manage.py migrate
 
