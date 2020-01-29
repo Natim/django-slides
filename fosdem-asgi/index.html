@@ -169,6 +169,14 @@ def application(environ, start_response):
 - Wikipedia does not know about ASGI yet.
 - It's the spiritual successor to WSGI.
 - Provides a standard interface for async Python web servers.
+
+```python
+def application(scope, receive, send):
+    event = await receive()
+    ...
+    await send({"type": "websocket.send", ...})
+```
+
 </template>
 
 
@@ -285,7 +293,7 @@ def application(environ, start_response):
           backface="./images/cover-no-logo.png">
 
 ![ASGI Architecture](./images/asgi.png)
-    
+
 </template>
 
 <template layout="bullets" type="text/x-markdown"
