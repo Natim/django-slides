@@ -167,7 +167,7 @@ def application(environ, start_response):
 ## Async Server Gateway Interface
 
 - Wikipedia does not know about ASGI yet.
-- It's the spiritual successor to WSGI.
+- It's the spiritual successor and a superset to WSGI.
 - Provides a standard interface for async Python web servers.
 
 ```python
@@ -269,7 +269,7 @@ def application(scope, receive, send):
           backface="./images/cover-no-logo.png">
 ## HTTP/3
 
-- HTTP/3 was previously called QUICK.
+- HTTP/3 was previously called QUIC.
 - It is an improvment of HTTP/2 that works on top of UDP instead of TCP.
 - I encourage you to watch Daniel Stenberg's talk about HTTP/3 this afternoon.
 
@@ -324,7 +324,7 @@ def application(scope, receive, send):
           backface="./images/cover-no-logo.png">
 ## ASGI is already popular
 
-- ASGI is already mainstream in **Startlette** and **Fastapi**.
+- ASGI is already mainstream in **Starlette** and **Fastapi**.
 - Django 3 shipped an ASGI endpoint, next versions should embed more tooling.
 - If you want the most of ASGI and Django, you can start today with Django Channels.
 - If you find yourself using Celery, you can benefit from the
