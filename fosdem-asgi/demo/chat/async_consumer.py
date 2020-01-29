@@ -27,15 +27,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         text_data_json = json.loads(text_data)
         message = text_data_json['message']
 
-        if 'png' in message or 'jpg' in message:
-            await self.channel_layer.send(
-                "thumbnails-generate",
-                {
-                    "type": "generate",
-                    "url": message,
-                },
-            )
-        
         # Send message to room group
         await self.channel_layer.group_send(
             self.room_group_name,
