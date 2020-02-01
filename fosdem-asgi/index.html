@@ -303,10 +303,9 @@ async def application(scope, receive, send):
 
 - ASGI describes events instead of requests and responses.
 - ASGI servers keep tabs on client connections.
-- The ASGI server pushes new events to a queue.
-- Workers handle events from the queue.
+- The ASGI server pushes new events to the `receive` function.
+- Workers handle events and return responses through the `send` function.
 - A HTTP request is just another kind of event.
-- You can use workers for async background tasks as well.
 </template>
 
 
@@ -317,6 +316,15 @@ async def application(scope, receive, send):
     
 ![ASGI Architecture](./images/asgi.png)
 
+</template>
+
+<template layout="bullets" type="text/x-markdown"
+          backface="./images/cover-no-logo.png">
+## More events
+
+- Django channels add a channel layer so that applications can communicate between them.
+- You can create groups and then send and receive events to and from a group.
+- You can use workers for async background tasks as well.
 </template>
 
 
