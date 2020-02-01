@@ -171,7 +171,7 @@ def application(environ, start_response):
 - Provides a standard interface for async Python web servers.
 
 ```python
-def application(scope, receive, send):
+async def application(scope, receive, send):
     event = await receive()
     ...
     await send({"type": "websocket.send", ...})
