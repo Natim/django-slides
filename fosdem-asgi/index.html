@@ -271,7 +271,7 @@ async def application(scope, receive, send):
 
 - HTTP/3 was previously called QUIC.
 - It is an improvment of HTTP/2 that works on top of UDP instead of TCP.
-- I encourage you to watch Daniel Stenberg's talk about HTTP/3 this afternoon.
+- I encourage you to watch Daniel Stenberg's talk about HTTP/3 this afternoon. (Janson theater at 4pm.)
 
 </template>
 
@@ -301,9 +301,9 @@ async def application(scope, receive, send):
 ## An event based protocol
 
 - ASGI describes events instead of requests and responses.
-- ASGI servers keep tabs on client sockets. (i.e Daphne, Uvicorn)
+- ASGI servers keep tabs on client connections.
 - The ASGI server pushes new events to a queue.
-- Workers handle JSON events from the queue.
+- Workers handle events from the queue.
 - A HTTP request is just another kind of event.
 - You can use workers for async background tasks as well.
 </template>
@@ -324,7 +324,7 @@ async def application(scope, receive, send):
           backface="./images/cover-no-logo.png">
 ## ASGI is already popular
 
-- ASGI is already mainstream in **Starlette** and **Fastapi**.
+- ASGI is already mainstream in **Starlette** and **FastAPI**.
 - Django 3 shipped an ASGI endpoint, next versions should embed more tooling.
 - If you want the most of ASGI and Django, you can start today with Django Channels.
 - If you find yourself using Celery, you can benefit from the
