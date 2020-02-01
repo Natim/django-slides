@@ -7,7 +7,7 @@ import thumbnails.consumers as thumbnails_consumers
 
 
 application = ProtocolTypeRouter({
-    # Empty for now (http->django views is added by default)
+    # http->django views is added by default
     'websocket': AllowedHostsOriginValidator(
         AuthMiddlewareStack(
             URLRouter(
